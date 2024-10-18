@@ -36,14 +36,14 @@ def predict_next_word(context, top_k=1):
         if last_two in trigram_freq:
             suggestions = sorted(trigram_freq[last_two].items(), key=lambda x: -x[1])
             return [word for word, _ in suggestions[:top_k]]
-
+    
     # Fall back to bigram
     if len(words) >= 1:
         last_word = words[-1]
         if last_word in bigram_freq:
             suggestions = sorted(bigram_freq[last_word].items(), key=lambda x: -x[1])
             return [word for word, _ in suggestions[:top_k]]
-
+    
     return []
 
 # Load n-gram models at startup
@@ -170,9 +170,14 @@ class NextWord:
         # Handle space key for prediction if enabled
         if self.prediction_enabled and char == " ":
             self.context = text_before_cursor.strip()
-            # Run prediction in a separate thread
-            threading.Thread(target=self.predict_and_display, args=(self.context,)).start()
-            return "break"  # Prevent space from being added in the widget
+            predictions = predict_next_word(self.context)
+            
+            if predictions:  # If there are predictions, handle them
+                self.temporary_predicted_word = predictions[0]
+                threading.Thread(target=self.predict_and_display, args=(self.context,)).start()
+                return "break"  # Prevent space from being added in the widget
+            else:  # No prediction, insert space
+                return None  # Allow space to be added to the widget
 
         # Remove temporary predicted word if another key is pressed
         elif self.temporary_predicted_word:
@@ -209,10 +214,11 @@ class NextWord:
             result = messagebox.askyesnocancel("Save Changes?", "You have unsaved changes. Do you want to save them?")
             if result:  # Save and exit
                 self.save_file()
-            elif result is None:  # Cancel
+            elif result is None:  # Cancela
                 return
-        self.root.quit()
+        self.root.destroy()
 
+# Main application
 if __name__ == "__main__":
     root = tk.Tk()
     app = NextWord(root)
