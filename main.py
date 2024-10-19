@@ -4,6 +4,7 @@ from collections import defaultdict
 import pickle
 import nltk
 import threading
+from PIL import Image, ImageTk
 import tkinter.messagebox as messagebox
 
 # Ensure NLTK resources are downloaded only once
@@ -54,15 +55,17 @@ class NextWord:
         self.root = root
         self.root.title("NextWord.txt")
         self.root.geometry("800x600")
-        self.root.iconbitmap("icon.ico")
+        ico = Image.open('icons8-notepad-96.png')
+        photo = ImageTk.PhotoImage(ico)
+        root.wm_iconphoto(False, photo)
 
         # Text widget for input
         self.en1 = tk.Text(root, wrap='word', height=15, width=80, font=('Arial', 12))
-        self.en1.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+        self.en1.pack(expand=True, fill=tk.BOTH)
 
         # Variables for word prediction
         self.context = ""
-        self.temporary_predicted_word = None
+        self.temporary_predicted_word = None 
         self.predicted_word_position = None
         self.current_file_path = None
         self.prediction_enabled = False  # To toggle word prediction
@@ -100,7 +103,7 @@ class NextWord:
     # Create a new file
     def new_file(self):
         self.en1.delete("1.0", tk.END)
-        self.root.title("Litepad - New")
+        self.root.title("NextWord.txt")
 
     # Open an existing file
     def open_file(self):
@@ -111,7 +114,7 @@ class NextWord:
                 self.en1.delete("1.0", tk.END)
                 self.en1.insert(tk.END, content)
             self.current_file_path = file_path
-            self.root.title(f"Litepad - {file_path}")
+            self.root.title(f"NextWord.txt - {file_path}")
 
     # Save the current file
     def save_file(self, event=None):
@@ -119,7 +122,7 @@ class NextWord:
             with open(self.current_file_path, 'w') as file:
                 content = self.en1.get("1.0", tk.END)
                 file.write(content)
-            self.root.title(f"Litepad - {self.current_file_path}")
+            self.root.title(f"NextWord.txt - {self.current_file_path}")
             self.save_prompted = False  # Reset prompt flag
         else:
             self.save_as()
@@ -132,7 +135,7 @@ class NextWord:
                 content = self.en1.get("1.0", tk.END)
                 file.write(content)
             self.current_file_path = file_path
-            self.root.title(f"Litepad - {file_path}")
+            self.root.title(f"NextWord.txt - {file_path}")
             self.save_prompted = False  # Reset prompt flag
 
     # Exit the application
@@ -214,7 +217,7 @@ class NextWord:
             result = messagebox.askyesnocancel("Save Changes?", "You have unsaved changes. Do you want to save them?")
             if result:  # Save and exit
                 self.save_file()
-            elif result is None:  # Cancela
+            elif result is None:  # Cancel
                 return
         self.root.destroy()
 
